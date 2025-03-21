@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { User, Leaf, CloudRain, Calendar, Tractor, BarChart3, GanttChart, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
 import WeatherWidget from '@/components/WeatherWidget';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Mock user data
 const userData = {
@@ -58,6 +59,7 @@ const userData = {
 
 const Dashboard = () => {
   const [selectedCrop, setSelectedCrop] = useState(userData.crops[0]);
+  const { t } = useLanguage();
 
   return (
     <Layout>

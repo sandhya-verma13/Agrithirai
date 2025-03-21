@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Home, Cloud, FileText, Tractor, Leaf, Bot, BarChart3, LogIn, Globe } from 'lucide-react';
+import { Menu, X, Sun, Moon, Home, Bot, LogIn, Globe, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -9,8 +9,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+
+// Add the appropriate icon imports
+import { Cloud, FileText, Tractor, Leaf, BarChart3 } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +34,7 @@ const Navbar = () => {
   const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,14 +67,23 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const navLinks = [
-    { name: language === 'en' ? 'Home' : 'முகப்பு', path: '/', icon: Home },
-    { name: language === 'en' ? 'Weather' : 'வானிலை', path: '/weather', icon: Cloud },
-    { name: language === 'en' ? 'Schemes' : 'திட்டங்கள்', path: '/schemes', icon: FileText },
-    { name: language === 'en' ? 'Equipment' : 'உபகரணங்கள்', path: '/equipment', icon: Tractor },
-    { name: language === 'en' ? 'Crops' : 'பயிர்கள்', path: '/crops', icon: Leaf },
-    { name: language === 'en' ? 'AI Assistant' : 'செயற்கை நுண்ணறிவு உதவியாளர்', path: '/ai-assistant', icon: Bot },
-    { name: language === 'en' ? 'Live Market Prices' : 'நேரடி சந்தை விலைகள்', path: '/market-prices', icon: BarChart3 },
+  // Features dropdown options
+  const features = [
+    { name: language === 'en' ? 'Weather' : t('weather-forecasts'), path: '/weather', icon: Cloud },
+    { name: language === 'en' ? 'Schemes' : t('government-schemes'), path: '/schemes', icon: FileText },
+    { name: language === 'en' ? 'Equipment' : t('equipment'), path: '/equipment', icon: Tractor },
+    { name: language === 'en' ? 'Crops' : t('crop-management'), path: '/crops', icon: Leaf },
+    { name: language === 'en' ? 'Live Market Prices' : t('market-prices'), path: '/market-prices', icon: BarChart3 },
+  ];
+
+  // Language options
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'ta', name: 'தமிழ்' },
+    { code: 'hi', name: 'हिन्दी' },
+    { code: 'te', name: 'తెలుగు' },
+    { code: 'ml', name: 'മലയാളം' },
+    { code: 'kn', name: 'ಕನ್ನಡ' },
   ];
 
   const handleLanguageChange = (lang: string) => {
@@ -88,23 +113,47 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                'nav-link flex items-center space-x-1 text-sm font-medium transition-colors',
-                isActive(link.path)
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-primary'
-              )}
-            >
-              <link.icon className="h-4 w-4" />
-              <span>{link.name}</span>
-            </Link>
-          ))}
-        </nav>
+        <NavigationMenu className="hidden md:flex">
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <Link to="/">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <Home className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'Home' : t('home')}
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>
+                {language === 'en' ? 'Features' : t('features')}
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                  {features.map((feature) => (
+                    <li key={feature.path} className="row-span-1">
+                      <Link to={feature.path} className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                        <div className="flex items-center space-x-2">
+                          <feature.icon className="h-4 w-4" />
+                          <div className="text-sm font-medium leading-none">{feature.name}</div>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            
+            <NavigationMenuItem>
+              <Link to="/ai-assistant">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <Bot className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'AI Assistant' : t('ai-assistant')}
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
         <div className="flex items-center space-x-4">
           <DropdownMenu>
@@ -119,12 +168,15 @@ const Navbar = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
-                English
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleLanguageChange('ta')}>
-                தமிழ்
-              </DropdownMenuItem>
+              <DropdownMenuLabel>Select Language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={language} onValueChange={handleLanguageChange}>
+                {languages.map((lang) => (
+                  <DropdownMenuRadioItem key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -145,7 +197,7 @@ const Navbar = () => {
               className="flex items-center space-x-2 bg-gradient-to-r from-primary to-agri-green-600 hover:from-agri-green-600 hover:to-primary transition-all duration-300"
             >
               <LogIn className="h-4 w-4" />
-              <span>{language === 'en' ? 'Login' : 'உள்நுழைய'}</span>
+              <span>{language === 'en' ? 'Login' : t('login')}</span>
             </Button>
           </Link>
 
@@ -165,21 +217,52 @@ const Navbar = () => {
       {isOpen && (
         <nav className="md:hidden px-4 py-6 mt-2 bg-background/95 backdrop-blur-md rounded-xl border border-border animate-fade-in">
           <div className="flex flex-col space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
-                  isActive(link.path)
-                    ? 'bg-primary/10 text-primary'
-                    : 'hover:bg-primary/5 text-foreground'
-                )}
-              >
-                <link.icon className="h-5 w-5" />
-                <span>{link.name}</span>
-              </Link>
-            ))}
+            <Link
+              to="/"
+              className={cn(
+                'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
+                isActive('/')
+                  ? 'bg-primary/10 text-primary'
+                  : 'hover:bg-primary/5 text-foreground'
+              )}
+            >
+              <Home className="h-5 w-5" />
+              <span>{language === 'en' ? 'Home' : t('home')}</span>
+            </Link>
+            
+            <div className="px-4 py-2">
+              <div className="font-medium mb-2">{language === 'en' ? 'Features' : t('features')}</div>
+              <div className="pl-4 space-y-2">
+                {features.map((feature) => (
+                  <Link
+                    key={feature.path}
+                    to={feature.path}
+                    className={cn(
+                      'flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors',
+                      isActive(feature.path)
+                        ? 'bg-primary/10 text-primary'
+                        : 'hover:bg-primary/5 text-foreground'
+                    )}
+                  >
+                    <feature.icon className="h-4 w-4" />
+                    <span>{feature.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            
+            <Link
+              to="/ai-assistant"
+              className={cn(
+                'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
+                isActive('/ai-assistant')
+                  ? 'bg-primary/10 text-primary'
+                  : 'hover:bg-primary/5 text-foreground'
+              )}
+            >
+              <Bot className="h-5 w-5" />
+              <span>{language === 'en' ? 'AI Assistant' : t('ai-assistant')}</span>
+            </Link>
           </div>
         </nav>
       )}

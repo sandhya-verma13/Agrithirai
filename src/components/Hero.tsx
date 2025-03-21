@@ -3,8 +3,11 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Hero = () => {
+  const { t } = useLanguage();
+  
   return (
     <section className="relative w-full py-24 md:py-32 overflow-hidden">
       {/* Decorative circles */}
@@ -20,11 +23,10 @@ const Hero = () => {
             className="space-y-2 max-w-3xl"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter">
-              Welcome to the{' '}
-              <span className="text-gradient">Screen of Future</span>
+              {t('welcome')}
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mt-4 max-w-2xl mx-auto italic">
-              "AI doesn't replace the farmer- it amplifies their potential"
+              "{t('ai-quote')}"
             </p>
           </motion.div>
 
@@ -36,13 +38,13 @@ const Hero = () => {
           >
             <Link to="/ai-assistant">
               <Button size="lg" className="bg-gradient-to-r from-primary to-agri-green-600 hover:from-agri-green-600 hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 group">
-                Try AI Assistant
+                {t('try-ai-assistant')}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link to="/schemes">
               <Button variant="outline" size="lg" className="border-primary hover:bg-primary/5">
-                Explore Schemes
+                {t('explore-schemes')}
               </Button>
             </Link>
           </motion.div>

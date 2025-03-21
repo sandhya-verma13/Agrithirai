@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { motion } from 'framer-motion';
+import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Login = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState({
     email: '',
@@ -31,21 +36,47 @@ const Login = () => {
     setTimeout(() => {
       console.log('Login attempt with:', loginData);
       setIsLoading(false);
-      // In a real application, you would redirect to the dashboard upon successful login
-      window.location.href = '/dashboard';
+      
+      // For demo purposes, simply set as authenticated and redirect
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome to your AgriThirai dashboard!",
+      });
+      
+      navigate('/dashboard');
     }, 1500);
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (registerData.password !== registerData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     // Simulate register API call
     setTimeout(() => {
       console.log('Register attempt with:', registerData);
+      
+      // For demo purposes, set as authenticated
+      localStorage.setItem('isAuthenticated', 'true');
+      
       setIsLoading(false);
-      // In a real application, you might show a success message or redirect
-      window.location.href = '/dashboard';
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully",
+      });
+      
+      navigate('/dashboard');
     }, 1500);
   };
 
