@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,8 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bot, User, Send, CircleHelp, Zap, MessageSquare, Leaf, FileText, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Mock conversation for demo
-const initialMessages = [
+type Message = {
+  id: number;
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+};
+
+const initialMessages: Message[] = [
   {
     id: 1,
     sender: 'ai',
@@ -17,13 +22,6 @@ const initialMessages = [
     timestamp: new Date().toISOString()
   }
 ];
-
-type Message = {
-  id: number;
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: string;
-};
 
 const suggestedQuestions = [
   "What are the best crops to plant in June?",
@@ -39,7 +37,6 @@ const AIAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -47,7 +44,6 @@ const AIAssistant = () => {
   const sendMessage = (text: string = input) => {
     if (!text.trim()) return;
 
-    // Add user message
     const userMessage: Message = {
       id: messages.length + 1,
       sender: 'user',
@@ -57,10 +53,8 @@ const AIAssistant = () => {
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInput('');
 
-    // Simulate AI typing
     setIsTyping(true);
     setTimeout(() => {
-      // Generate AI response based on user input
       let response = '';
       
       if (text.toLowerCase().includes('government scheme') || text.toLowerCase().includes('subsidy')) {
