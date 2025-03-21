@@ -74,6 +74,28 @@
   font-display: swap;
 }
 
+/* Agriculture-themed background pattern for light mode */
+.bg-agriculture-pattern {
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(rgba(var(--agri-green-500), 0.05) 2px, transparent 2px),
+    radial-gradient(rgba(var(--agri-green-600), 0.05) 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  position: relative;
+}
+
+.bg-agriculture-pattern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, rgba(var(--agri-green-100), 0.1) 0%, rgba(var(--background), 0.02) 100%);
+  z-index: -1;
+}
+
 /* Custom page transitions */
 .page-transition-enter {
   opacity: 0;

@@ -10,7 +10,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen overflow-hidden bg-agriculture-pattern dark:bg-none">
       <Navbar />
       <motion.main 
         initial={{ opacity: 0, y: 8 }}

@@ -1,15 +1,24 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Home, Cloud, FileText, Tractor, Leaf, Bot, BarChart3, LogIn } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Sun, Moon, Home, Cloud, FileText, Tractor, Leaf, Bot, BarChart3, LogIn, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,14 +52,18 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Weather', path: '/weather', icon: Cloud },
-    { name: 'Schemes', path: '/schemes', icon: FileText },
-    { name: 'Equipment', path: '/equipment', icon: Tractor },
-    { name: 'Crops', path: '/crops', icon: Leaf },
-    { name: 'AI Assistant', path: '/ai-assistant', icon: Bot },
-    { name: 'Live Market Prices', path: '/market-prices', icon: BarChart3 },
+    { name: language === 'en' ? 'Home' : 'முகப்பு', path: '/', icon: Home },
+    { name: language === 'en' ? 'Weather' : 'வானிலை', path: '/weather', icon: Cloud },
+    { name: language === 'en' ? 'Schemes' : 'திட்டங்கள்', path: '/schemes', icon: FileText },
+    { name: language === 'en' ? 'Equipment' : 'உபகரணங்கள்', path: '/equipment', icon: Tractor },
+    { name: language === 'en' ? 'Crops' : 'பயிர்கள்', path: '/crops', icon: Leaf },
+    { name: language === 'en' ? 'AI Assistant' : 'செயற்கை நுண்ணறிவு உதவியாளர்', path: '/ai-assistant', icon: Bot },
+    { name: language === 'en' ? 'Live Market Prices' : 'நேரடி சந்தை விலைகள்', path: '/market-prices', icon: BarChart3 },
   ];
+
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang);
+  };
 
   return (
     <header
@@ -94,6 +107,27 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="transition-transform hover:scale-110"
+                aria-label="Change language"
+              >
+                <Globe className="h-[1.2rem] w-[1.2rem]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('ta')}>
+                தமிழ்
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             variant="ghost"
             size="icon"
@@ -111,7 +145,7 @@ const Navbar = () => {
               className="flex items-center space-x-2 bg-gradient-to-r from-primary to-agri-green-600 hover:from-agri-green-600 hover:to-primary transition-all duration-300"
             >
               <LogIn className="h-4 w-4" />
-              <span>Login</span>
+              <span>{language === 'en' ? 'Login' : 'உள்நுழைய'}</span>
             </Button>
           </Link>
 

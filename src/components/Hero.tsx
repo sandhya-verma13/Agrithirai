@@ -19,17 +19,12 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-2 max-w-3xl"
           >
-            <div className="inline-block mb-4">
-              <span className="px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
-                AI-Powered Agriculture
-              </span>
-            </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter">
               Welcome to the{' '}
-              <span className="text-gradient">Screen to Future</span>
+              <span className="text-gradient">Screen of Future</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mt-4 max-w-2xl mx-auto">
-              Transforming agriculture with cutting-edge AI technology for optimal crop management and maximum profitability.
+            <p className="text-xl md:text-2xl text-muted-foreground mt-4 max-w-2xl mx-auto italic">
+              "AI doesn't replace the farmer- it amplifies their potential"
             </p>
           </motion.div>
 
@@ -60,9 +55,18 @@ const Hero = () => {
           >
             <div className="aspect-video rounded-xl overflow-hidden border shadow-2xl">
               <div className="w-full h-full bg-gradient-to-br from-agri-green-400/20 to-agri-green-700/40 flex items-center justify-center">
-                <span className="font-display text-xl text-primary font-medium">
-                  AI-powered insights for modern agriculture
-                </span>
+                <img 
+                  src="/farming-assistant.jpg" 
+                  alt="AI Farming Assistant" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback if image doesn't load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                    target.parentElement!.innerHTML = '<span class="font-display text-xl text-primary font-medium">Intelligent farming solutions for modern agriculture</span>';
+                  }}
+                />
               </div>
             </div>
             <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-accent rounded-full flex items-center justify-center shadow-lg">
