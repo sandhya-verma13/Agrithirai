@@ -53,6 +53,8 @@ const Index = () => {
 
   return (
     <Layout>
+      {/* Background image for the home page */}
+      <div className="home-background"></div>
       <Hero />
 
       <section className="py-20 bg-secondary/50">

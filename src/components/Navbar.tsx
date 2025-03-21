@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Home, Bot, LogIn, Globe, ChevronDown } from 'lucide-react';
+import { Menu, X, Sun, Moon, Home, Bot, LogIn, Globe, ChevronDown, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -72,7 +72,7 @@ const Navbar = () => {
     { name: language === 'en' ? 'Weather' : t('weather-forecasts'), path: '/weather', icon: Cloud },
     { name: language === 'en' ? 'Schemes' : t('government-schemes'), path: '/schemes', icon: FileText },
     { name: language === 'en' ? 'Equipment' : t('equipment'), path: '/equipment', icon: Tractor },
-    { name: language === 'en' ? 'Crops' : t('crop-management'), path: '/crops', icon: Leaf },
+    { name: language === 'en' ? 'Crop Management' : t('crop-management'), path: '/crops', icon: Leaf },
     { name: language === 'en' ? 'Live Market Prices' : t('market-prices'), path: '/market-prices', icon: BarChart3 },
   ];
 
@@ -120,6 +120,15 @@ const Navbar = () => {
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   <Home className="w-4 h-4 mr-2" />
                   {language === 'en' ? 'Home' : t('home')}
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            
+            <NavigationMenuItem>
+              <Link to="/about">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <Info className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'About' : t('about')}
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
@@ -228,6 +237,19 @@ const Navbar = () => {
             >
               <Home className="h-5 w-5" />
               <span>{language === 'en' ? 'Home' : t('home')}</span>
+            </Link>
+            
+            <Link
+              to="/about"
+              className={cn(
+                'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
+                isActive('/about')
+                  ? 'bg-primary/10 text-primary'
+                  : 'hover:bg-primary/5 text-foreground'
+              )}
+            >
+              <Info className="h-5 w-5" />
+              <span>{language === 'en' ? 'About' : t('about')}</span>
             </Link>
             
             <div className="px-4 py-2">

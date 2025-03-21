@@ -16,6 +16,7 @@ import AIAssistant from "./pages/AIAssistant";
 import LiveMarketPrices from "./pages/LiveMarketPrices";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
             <Route path="/weather" element={<Weather />} />
             <Route path="/schemes" element={<Schemes />} />
             <Route path="/equipment" element={<Equipment />} />

@@ -22,11 +22,19 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-2 max-w-3xl"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter">
-              {t('welcome')}
-            </h1>
+            <div className="content">
+              <h1 className="title text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter">
+                Welcome to the Screen of Future
+                <div className="aurora">
+                  <div className="aurora__item"></div>
+                  <div className="aurora__item"></div>
+                  <div className="aurora__item"></div>
+                  <div className="aurora__item"></div>
+                </div>
+              </h1>
+            </div>
             <p className="text-xl md:text-2xl text-muted-foreground mt-4 max-w-2xl mx-auto italic">
-              "{t('ai-quote')}"
+              "AI doesn't replace the farmer- it amplifies their potential"
             </p>
           </motion.div>
 
