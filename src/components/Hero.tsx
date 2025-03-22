@@ -8,6 +8,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const Hero = () => {
   const { t } = useLanguage();
   
+  // Text animation variables for the welcome text
+  const welcomeText = "Welcome to the Screen of Future";
+  
   return (
     <section className="relative w-full py-24 md:py-32 overflow-hidden">
       {/* Decorative circles */}
@@ -22,16 +25,25 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-2 max-w-3xl"
           >
-            <div className="content">
-              <h1 className="title text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter">
-                Welcome to the Screen of Future
-                <div className="aurora">
-                  <div className="aurora__item"></div>
-                  <div className="aurora__item"></div>
-                  <div className="aurora__item"></div>
-                  <div className="aurora__item"></div>
-                </div>
-              </h1>
+            <div className="overflow-hidden">
+              {welcomeText.split('').map((char, index) => (
+                <motion.span
+                  key={index}
+                  className="inline-block text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tighter"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.1 + index * 0.03,
+                    ease: [0.43, 0.13, 0.23, 0.96]
+                  }}
+                  style={{
+                    color: index % 3 === 0 ? 'hsl(var(--primary))' : 'currentColor'
+                  }}
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </motion.span>
+              ))}
             </div>
             <p className="text-xl md:text-2xl text-muted-foreground mt-4 max-w-2xl mx-auto italic">
               "AI doesn't replace the farmer- it amplifies their potential"
