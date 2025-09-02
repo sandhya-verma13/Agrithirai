@@ -1,0 +1,50 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "equipment_id": {
+      "type": "string",
+      "description": "ID of the booked equipment"
+    },
+    "farmer_email": {
+      "type": "string",
+      "description": "Email of the farmer making the booking"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Booking start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Booking end date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "approved",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "requested",
+      "description": "Booking status"
+    },
+    "total_cost": {
+      "type": "number",
+      "description": "Total rental cost"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or requirements"
+    }
+  },
+  "required": [
+    "equipment_id",
+    "farmer_email",
+    "start_date",
+    "end_date"
+  ]
+}
