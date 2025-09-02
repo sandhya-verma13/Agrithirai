@@ -1,0 +1,136 @@
+import React, { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { CropRecommendation } from "@/entities/all";
+import ReactMarkdown from 'react-markdown';
+import { Button } from "@/components/ui/button";
+import { 
+  ArrowLeft,
+  Calendar,
+  DollarSign,
+  Droplets,
+  Sprout,
+  Sun,
+  Thermometer,
+  TrendingUp,
+  Wind
+} from "lucide-react";
+import { createPageUrl } from "@/utils";
+import FertilizerCard from "../components/cropguide/FertilizerCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function CropDetails() {
+  const [crop, setCrop] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchCrop = async () => {
+      const params = new URLSearchParams(location.search);
+      const cropId = params.get('id');
+      if (cropId) {
+        setLoading(true);
+        const data = await CropRecommendation.get(cropId);
+        setCrop(data);
+        setLoading(false);
+      }
+    };
+    fetchCrop();
+  }, [location]);
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <Skeleton className="h-10 w-48 mb-4" />
+        <Skeleton className="h-6 w-full mb-8" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!crop) {
+    return <div className="text-center p-8">Crop not found.</div>;
+  }
+
+  const detailItems = [
+    { icon: Sprout, label: 'Soil Type', value: crop.soil_type },
+    { icon: Sun, label: 'Climate', value: crop.climate_requirements },
+    { icon: Calendar, label: 'Harvesting Time', value: `${crop.harvesting_time_days} days` },
+    { icon: TrendingUp, label: 'Market Demand', value: crop.market_demand, isBadge: true },
+    { icon: DollarSign, label: 'Est. Investment', value: `₹${crop.investment_required}/acre` }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <Link to={createPageUrl("CropGuide")}>
+          <Button variant="outline" className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Crop Guide
+          </Button>
+        </Link>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">{crop.crop_name}</h1>
+          <p className="text-gray-600 mt-2 text-lg">
+            A complete guide to cultivating {crop.crop_name} in the {crop.season} season.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader><CardTitle>Planting Guide</CardTitle></CardHeader>
+              <CardContent className="prose max-w-none">
+                <ReactMarkdown>{crop.planting_guide}</ReactMarkdown>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle>Recommended Fertilizers</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                {crop.recommended_fertilizers?.map((fert, index) => (
+                  <FertilizerCard key={index} fertilizer={fert} />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle>Crop Profile</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                {detailItems.map(item => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <item.icon className="w-5 h-5 text-green-600 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-500">{item.label}</p>
+                      {item.isBadge ? (
+                        <Badge variant="secondary" className="capitalize">{item.value}</Badge>
+                      ) : (
+                        <p className="font-medium">{item.value}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle>Suitable Regions</CardTitle></CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {crop.region_suitability?.map(region => (
+                  <Badge key={region} variant="outline">{region}</Badge>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
