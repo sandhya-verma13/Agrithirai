@@ -1,0 +1,30 @@
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Droplets, Sprout, Zap } from 'lucide-react';
+
+export default function FertilizerCard({ fertilizer }) {
+  const typeIcons = {
+    NPK: <Zap className="w-5 h-5 text-yellow-500" />,
+    Organic: <Sprout className="w-5 h-5 text-green-500" />,
+    default: <Droplets className="w-5 h-5 text-blue-500" />,
+  };
+  const icon = typeIcons[fertilizer.type] || typeIcons.default;
+  
+  return (
+    <Card className="bg-green-50 border-green-200">
+      <CardContent className="p-4 flex items-start gap-4">
+        <div className="p-3 bg-white rounded-lg">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-800">{fertilizer.name}</h4>
+          <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+            <span>Type: <span className="font-medium">{fertilizer.type}</span></span>
+            <span>Stage: <span className="font-medium">{fertilizer.application_stage}</span></span>
+            <span>Dosage: <span className="font-medium">{fertilizer.dosage}</span></span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
