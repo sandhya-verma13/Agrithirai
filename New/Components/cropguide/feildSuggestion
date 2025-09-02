@@ -1,0 +1,319 @@
+import React, { useState } from 'react';
+import { InvokeLLM } from '@/integrations/Core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Loader2, MapPin, DollarSign, Calendar } from 'lucide-react';
+
+export default function FieldSuggestions({ user, recommendations }) {
+  const [fieldData, setFieldData] = useState({
+    location: user?.farm_location || '',
+    soil_type: '',
+    farm_size: user?.farm_size_acres || '',
+    budget: '',
+    experience_level: user?.experience_years ? (user.experience_years > 5 ? 'experienced' : 'beginner') : '',
+    water_availability: '',
+    market_preference: ''
+  });
+  const [suggestions, setSuggestions] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerateSuggestions = async () => {
+    setLoading(true);
+    try {
+      const availableCrops = recommendations.map(r => ({
+        name: r.crop_name,
+        season: r.season,
+        investment: r.investment_required,
+        yield: r.expected_yield_per_acre,
+        market_demand: r.market_demand,
+        water_requirement: r.water_requirement,
+        risk_level: r.risk_level,
+        origin_country: r.origin_country,
+        is_international: r.is_international
+      }));
+
+      const prompt = `As an agricultural expert, analyze the farmer's field conditions and recommend the top 5 most suitable crops from the available options.
+
+Farmer's Field Details:
+- Location: ${fieldData.location}
+- Soil Type: ${fieldData.soil_type}
+- Farm Size: ${fieldData.farm_size} acres
+- Budget: ₹${fieldData.budget}
+- Experience: ${fieldData.experience_level}
+- Water Availability: ${fieldData.water_availability}
+- Market Preference: ${fieldData.market_preference}
+
+Available Crops: ${JSON.stringify(availableCrops, null, 2)}
+
+Provide personalized recommendations considering:
+1. Climate suitability for the location
+2. Budget constraints
+3. Experience level of farmer
+4. Water requirements vs availability
+5. Market demand and export potential
+6. Risk assessment
+
+Include both Indian and international varieties when suitable.`;
+
+      const result = await InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            recommendations: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  crop_name: { type: "string" },
+                  suitability_score: { type: "number" },
+                  reasons: { type: "array", items: { type: "string" } },
+                  expected_profit: { type: "string" },
+                  risk_factors: { type: "array", items: { type: "string" } },
+                  season_advice: { type: "string" },
+                  is_international: { type: "boolean" }
+                }
+              }
+            },
+            field_analysis: {
+              type: "object",
+              properties: {
+                strengths: { type: "array", items: { type: "string" } },
+                challenges: { type: "array", items: { type: "string" } },
+                recommendations: { type: "array", items: { type: "string" } }
+              }
+            }
+          }
+        }
+      });
+
+      setSuggestions(result);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+    }
+    setLoading(false);
+  };
+
+  const handleFieldChange = (field, value) => {
+    setFieldData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            AI-Powered Field Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-green-100">
+            Get personalized crop recommendations based on your field conditions, including international varieties with high export potential.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tell Us About Your Field</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="location">Farm Location</Label>
+              <Input
+                id="location"
+                value={fieldData.location}
+                onChange={(e) => handleFieldChange('location', e.target.value)}
+                placeholder="e.g., Pune, Maharashtra"
+              />
+            </div>
+            <div>
+              <Label htmlFor="soil_type">Soil Type</Label>
+              <Select value={fieldData.soil_type} onValueChange={(value) => handleFieldChange('soil_type', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select soil type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sandy">Sandy Soil</SelectItem>
+                  <SelectItem value="loamy">Loamy Soil</SelectItem>
+                  <SelectItem value="clay">Clay Soil</SelectItem>
+                  <SelectItem value="black_cotton">Black Cotton Soil</SelectItem>
+                  <SelectItem value="alluvial">Alluvial Soil</SelectItem>
+                  <SelectItem value="red">Red Soil</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="farm_size">Farm Size (acres)</Label>
+              <Input
+                id="farm_size"
+                type="number"
+                value={fieldData.farm_size}
+                onChange={(e) => handleFieldChange('farm_size', e.target.value)}
+                placeholder="e.g., 5"
+              />
+            </div>
+            <div>
+              <Label htmlFor="budget">Budget (₹)</Label>
+              <Input
+                id="budget"
+                type="number"
+                value={fieldData.budget}
+                onChange={(e) => handleFieldChange('budget', e.target.value)}
+                placeholder="e.g., 100000"
+              />
+            </div>
+            <div>
+              <Label htmlFor="experience">Experience Level</Label>
+              <Select value={fieldData.experience_level} onValueChange={(value) => handleFieldChange('experience_level', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select experience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">Beginner (0-2 years)</SelectItem>
+                  <SelectItem value="intermediate">Intermediate (3-5 years)</SelectItem>
+                  <SelectItem value="experienced">Experienced (5+ years)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="water">Water Availability</Label>
+              <Select value={fieldData.water_availability} onValueChange={(value) => handleFieldChange('water_availability', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select water availability" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="abundant">Abundant (irrigation + rainfall)</SelectItem>
+                  <SelectItem value="moderate">Moderate (seasonal rainfall)</SelectItem>
+                  <SelectItem value="limited">Limited (drought-prone area)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Button 
+            onClick={handleGenerateSuggestions}
+            disabled={loading || !fieldData.location || !fieldData.soil_type}
+            className="w-full bg-green-600 hover:bg-green-700"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Analyzing Your Field...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Get Personalized Recommendations
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {suggestions && (
+        <div className="space-y-6">
+          {/* Field Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Field Analysis</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-green-700 mb-2">Field Strengths</h4>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.field_analysis?.strengths?.map((strength, index) => (
+                    <Badge key={index} className="bg-green-100 text-green-800">{strength}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-orange-700 mb-2">Challenges</h4>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.field_analysis?.challenges?.map((challenge, index) => (
+                    <Badge key={index} variant="outline" className="text-orange-700">{challenge}</Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Crop Recommendations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Crop Recommendations for Your Field</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {suggestions.recommendations?.map((rec, index) => (
+                  <div key={index} className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-bold text-gray-800">{rec.crop_name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline">Score: {rec.suitability_score}/10</Badge>
+                            {rec.is_international && (
+                              <Badge className="bg-purple-100 text-purple-800">International</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-green-600 text-lg">{rec.expected_profit}</div>
+                        <div className="text-sm text-gray-500">Expected Profit</div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 className="font-semibold text-gray-700 mb-2">Why This Crop:</h5>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          {rec.reasons?.map((reason, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-green-500 mt-1">•</span>
+                              {reason}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-gray-700 mb-2">Risk Factors:</h5>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          {rec.risk_factors?.map((risk, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-orange-500 mt-1">•</span>
+                              {risk}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {rec.season_advice && (
+                      <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800 font-medium">
+                          <Calendar className="w-4 h-4 inline mr-1" />
+                          Season Advice: {rec.season_advice}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
