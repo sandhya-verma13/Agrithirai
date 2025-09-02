@@ -1,0 +1,213 @@
+import React, { useState, useEffect } from "react";
+import { Equipment, Booking, User } from "@/entities/all";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Plus, 
+  Search, 
+  Filter,
+  MapPin,
+  Phone,
+  Calendar
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import EquipmentCard from "../components/equipment/EquipmentCard";
+import AddEquipmentForm from "../components/equipment/AddEquipmentForm";
+import BookingModal from "../components/equipment/BookingModal";
+
+export default function EquipmentPage() {
+  const [equipment, setEquipment] = useState([]);
+  const [filteredEquipment, setFilteredEquipment] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [user, setUser] = useState(null);
+  const [myBookings, setMyBookings] = useState([]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    filterEquipment();
+  }, [equipment, searchTerm, selectedCategory]);
+
+  const loadData = async () => {
+    const [equipmentData, currentUser, bookingsData] = await Promise.all([
+      Equipment.list("-created_date"),
+      User.me(),
+      Booking.list("-created_date")
+    ]);
+    
+    setEquipment(equipmentData);
+    setUser(currentUser);
+    setMyBookings(bookingsData.filter(b => b.farmer_email === currentUser.email));
+  };
+
+  const filterEquipment = () => {
+    let filtered = equipment;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(item => item.category === selectedCategory);
+    }
+    
+    setFilteredEquipment(filtered);
+  };
+
+  const handleBookEquipment = async (bookingData) => {
+    await Booking.create({
+      ...bookingData,
+      farmer_email: user.email
+    });
+    setSelectedEquipment(null);
+    loadData();
+  };
+
+  const categories = [
+    "all", "Tractors", "Harvesting", "Irrigation", 
+    "Plowing", "Seeding", "Fertilizers", "Tools", "Other"
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Equipment Marketplace</h1>
+            <p className="text-gray-600 mt-1">Share and rent agricultural tools in your community</p>
+          </div>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="bg-green-600 hover:bg-green-700 shadow-lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            List Equipment
+          </Button>
+        </div>
+
+        <Tabs defaultValue="browse" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="browse">Browse Equipment</TabsTrigger>
+            <TabsTrigger value="my-equipment">My Equipment</TabsTrigger>
+            <TabsTrigger value="my-bookings">My Bookings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="browse" className="space-y-6">
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search equipment or location..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 border rounded-lg bg-white"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category === "all" ? "All Categories" : category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEquipment.map((item) => (
+                <EquipmentCard 
+                  key={item.id} 
+                  equipment={item}
+                  onBook={() => setSelectedEquipment(item)}
+                  isOwner={item.owner_email === user?.email}
+                />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="my-equipment">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {equipment.filter(item => item.owner_email === user?.email).map((item) => (
+                <EquipmentCard 
+                  key={item.id} 
+                  equipment={item}
+                  isOwner={true}
+                />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="my-bookings">
+            <div className="space-y-4">
+              {myBookings.map((booking) => {
+                const equipmentItem = equipment.find(e => e.id === booking.equipment_id);
+                return (
+                  <div key={booking.id} className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-lg">{equipmentItem?.name}</h3>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {booking.start_date} to {booking.end_date}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            {equipmentItem?.location}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-green-600">₹{booking.total_cost}</div>
+                        <div className={`text-sm px-3 py-1 rounded-full ${
+                          booking.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          booking.status === 'requested' ? 'bg-yellow-100 text-yellow-800' :
+                          booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {booking.status}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {showAddForm && (
+          <AddEquipmentForm
+            onClose={() => setShowAddForm(false)}
+            onSuccess={() => {
+              setShowAddForm(false);
+              loadData();
+            }}
+          />
+        )}
+
+        {selectedEquipment && (
+          <BookingModal
+            equipment={selectedEquipment}
+            onClose={() => setSelectedEquipment(null)}
+            onBook={handleBookEquipment}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
