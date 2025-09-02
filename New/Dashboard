@@ -1,0 +1,202 @@
+
+import React, { useState, useEffect } from "react";
+import { User, Equipment, CropRecommendation } from "@/entities/all";
+import { InvokeLLM } from "@/integrations/Core";
+import { 
+  CloudSun, 
+  TrendingUp, 
+  Wrench, 
+  Wheat, 
+  Thermometer,
+  Droplets,
+  Wind,
+  Eye,
+  Sprout
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+import WeatherCard from "../components/dashboard/WeatherCard";
+import PriceTracker from "../components/dashboard/PriceTracker";
+import QuickActions from "../components/dashboard/QuickActions";
+import FarmStats from "../components/dashboard/FarmStats";
+
+export default function Dashboard() {
+  const [user, setUser] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [prices, setPrices] = useState(null);
+  const [equipment, setEquipment] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const currentUser = await User.me();
+      setUser(currentUser);
+
+      // Load weather data
+      const weatherData = await InvokeLLM({
+        prompt: `Get current weather forecast for farming region in India. Include temperature, humidity, precipitation, wind speed, and UV index. Also provide a 3-day farming forecast with recommendations.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            current: {
+              type: "object",
+              properties: {
+                temperature: { type: "number" },
+                humidity: { type: "number" },
+                precipitation: { type: "number" },
+                wind_speed: { type: "number" },
+                uv_index: { type: "number" },
+                description: { type: "string" }
+              }
+            },
+            forecast: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  day: { type: "string" },
+                  temp_max: { type: "number" },
+                  temp_min: { type: "number" },
+                  condition: { type: "string" },
+                  farming_advice: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      setWeather(weatherData);
+
+      // Load crop prices
+      const priceData = await InvokeLLM({
+        prompt: `Get current market prices for major crops in India including wheat, rice, sugarcane, cotton, pulses. Include price trends and percentage changes from last week.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            crops: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  current_price: { type: "number" },
+                  unit: { type: "string" },
+                  change_percent: { type: "number" },
+                  trend: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      setPrices(priceData);
+
+      // Load equipment and recommendations
+      const [equipmentData, recommendationData] = await Promise.all([
+        Equipment.list("-created_date", 5),
+        CropRecommendation.list("-created_date", 3)
+      ]);
+
+      setEquipment(equipmentData);
+      setRecommendations(recommendationData);
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-blue-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <Sprout className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">
+                Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'}!
+              </h1>
+              <p className="text-gray-600">
+                {user ? `Welcome back, ${user.full_name}` : "Welcome to your farming dashboard"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Dashboard Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          {/* Weather Section */}
+          <div className="lg:col-span-2">
+            <WeatherCard weather={weather} loading={loading} />
+          </div>
+
+          {/* Farm Stats */}
+          <div>
+            <FarmStats user={user} equipment={equipment} />
+          </div>
+        </div>
+
+        {/* Price Tracker */}
+        <div className="mb-8">
+          <PriceTracker prices={prices} loading={loading} />
+        </div>
+
+        {/* Quick Actions & Recommendations */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <QuickActions />
+          
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wheat className="w-5 h-5 text-green-600" />
+                Crop Recommendations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="flex justify-between items-center">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recommendations.slice(0, 3).map((rec) => (
+                    <Link to={createPageUrl(`CropDetails?id=${rec.id}`)} key={rec.id} className="block hover:bg-green-50 rounded-lg transition-colors">
+                      <div className="flex justify-between items-center p-3">
+                        <div>
+                          <p className="font-medium text-gray-800">{rec.crop_name}</p>
+                          <p className="text-sm text-gray-600">{rec.season} Season</p>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {rec.market_demand} demand
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
