@@ -1,0 +1,130 @@
+{
+  "name": "CropRecommendation",
+  "type": "object",
+  "properties": {
+    "crop_name": {
+      "type": "string",
+      "description": "Name of the recommended crop"
+    },
+    "season": {
+      "type": "string",
+      "enum": [
+        "Kharif",
+        "Rabi",
+        "Zaid",
+        "Year-round"
+      ],
+      "description": "Growing season"
+    },
+    "soil_type": {
+      "type": "string",
+      "description": "Suitable soil type"
+    },
+    "climate_requirements": {
+      "type": "string",
+      "description": "Climate conditions needed"
+    },
+    "planting_guide": {
+      "type": "string",
+      "description": "Step-by-step planting instructions"
+    },
+    "harvesting_time_days": {
+      "type": "number",
+      "description": "Days from planting to harvest"
+    },
+    "expected_yield_per_acre": {
+      "type": "string",
+      "description": "Expected yield per acre"
+    },
+    "market_demand": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Current market demand"
+    },
+    "investment_required": {
+      "type": "number",
+      "description": "Approximate investment required per acre"
+    },
+    "region_suitability": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Regions where this crop grows well"
+    },
+    "recommended_fertilizers": {
+      "type": "array",
+      "description": "Fertilizers suitable for the crop",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "NPK",
+              "Organic",
+              "Micronutrient",
+              "Nitrogen",
+              "Phosphorus",
+              "Potassium"
+            ]
+          },
+          "application_stage": {
+            "type": "string"
+          },
+          "dosage": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "origin_country": {
+      "type": "string",
+      "description": "Country of origin or where it's predominantly grown"
+    },
+    "is_international": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an international crop variety"
+    },
+    "export_potential": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Export market potential"
+    },
+    "water_requirement": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Water requirement level"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Risk level for new farmers"
+    }
+  },
+  "required": [
+    "crop_name",
+    "season",
+    "planting_guide"
+  ]
+}
