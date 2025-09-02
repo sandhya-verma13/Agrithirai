@@ -1,0 +1,75 @@
+{
+  "name": "Equipment",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the equipment"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the equipment"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Tractors",
+        "Harvesting",
+        "Irrigation",
+        "Plowing",
+        "Seeding",
+        "Fertilizers",
+        "Tools",
+        "Other"
+      ],
+      "description": "Category of equipment"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the equipment owner"
+    },
+    "location": {
+      "type": "string",
+      "description": "Location where equipment is available"
+    },
+    "rental_price_per_day": {
+      "type": "number",
+      "description": "Daily rental price in rupees"
+    },
+    "availability_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "booked",
+        "maintenance"
+      ],
+      "default": "available",
+      "description": "Current availability status"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "excellent",
+        "good",
+        "fair",
+        "needs_repair"
+      ],
+      "description": "Condition of the equipment"
+    },
+    "contact_number": {
+      "type": "string",
+      "description": "Contact number for booking"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Image of the equipment"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "owner_email",
+    "location",
+    "rental_price_per_day"
+  ]
+}
