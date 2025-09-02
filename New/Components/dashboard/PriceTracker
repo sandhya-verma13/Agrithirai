@@ -1,0 +1,67 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function PriceTracker({ prices, loading }) {
+  const getTrendIcon = (trend) => {
+    if (trend === 'up') return <TrendingUp className="w-4 h-4 text-green-500" />;
+    if (trend === 'down') return <TrendingDown className="w-4 h-4 text-red-500" />;
+    return <Minus className="w-4 h-4 text-gray-500" />;
+  };
+
+  const getTrendColor = (change) => {
+    if (change > 0) return 'text-green-600 bg-green-50 border-green-200';
+    if (change < 0) return 'text-red-600 bg-red-50 border-red-200';
+    return 'text-gray-600 bg-gray-50 border-gray-200';
+  };
+
+  return (
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-amber-600" />
+          Market Prices Today
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="p-4 border rounded-lg">
+                <Skeleton className="h-4 w-16 mb-2" />
+                <Skeleton className="h-6 w-20 mb-2" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {(prices?.crops || [
+              {name: "Wheat", current_price: 2150, unit: "per quintal", change_percent: 8.2, trend: "up"},
+              {name: "Rice", current_price: 3200, unit: "per quintal", change_percent: -2.1, trend: "down"},
+              {name: "Cotton", current_price: 5800, unit: "per quintal", change_percent: 5.5, trend: "up"},
+              {name: "Sugarcane", current_price: 350, unit: "per quintal", change_percent: 1.2, trend: "up"},
+              {name: "Pulses", current_price: 7200, unit: "per quintal", change_percent: -0.8, trend: "down"}
+            ]).map((crop, index) => (
+              <div key={index} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-gray-800">{crop.name}</h4>
+                  {getTrendIcon(crop.trend)}
+                </div>
+                <div className="text-lg font-bold text-gray-900 mb-1">
+                  ₹{crop.current_price}
+                </div>
+                <div className="text-xs text-gray-600 mb-2">{crop.unit}</div>
+                <Badge variant="outline" className={`${getTrendColor(crop.change_percent)} border text-xs`}>
+                  {crop.change_percent > 0 ? '+' : ''}{crop.change_percent}%
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
