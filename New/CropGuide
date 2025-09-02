@@ -1,0 +1,113 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { CropRecommendation, User } from "@/entities/all";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, MapPin, Droplets } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CropGuideCard from "../components/cropguide/CropGuideCard";
+import FieldSuggestions from "../components/cropguide/FieldSuggestions";
+
+export default function CropGuide() {
+  const [recommendations, setRecommendations] = useState([]);
+  const [filteredRecs, setFilteredRecs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
+
+  const filterRecommendations = useCallback(() => {
+    let filtered = recommendations;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(rec =>
+        rec.crop_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        rec.origin_country?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (activeTab === "indian") {
+      filtered = filtered.filter(rec => !rec.is_international);
+    } else if (activeTab === "international") {
+      filtered = filtered.filter(rec => rec.is_international);
+    }
+    
+    setFilteredRecs(filtered);
+  }, [recommendations, searchTerm, activeTab]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    filterRecommendations();
+  }, [filterRecommendations]);
+
+  const loadData = async () => {
+    setLoading(true);
+    const [recData, userData] = await Promise.all([
+      CropRecommendation.list(),
+      User.me().catch(() => null)
+    ]);
+    setRecommendations(recData);
+    setUser(userData);
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Global Crop Guidance Center</h1>
+          <p className="text-gray-600 mt-1">Discover the best crops from around the world for your farm.</p>
+        </div>
+
+        <div className="relative mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            placeholder="Search crops or countries (e.g., Quinoa, Brazil, Avocado...)"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-12 text-lg h-14"
+          />
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="all">All Crops</TabsTrigger>
+            <TabsTrigger value="indian">Indian Varieties</TabsTrigger>
+            <TabsTrigger value="international">International</TabsTrigger>
+            <TabsTrigger value="suggestions">Field Suggestions</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="h-48 bg-white rounded-lg p-6 animate-pulse"></div>
+                ))
+              ) : (
+                filteredRecs.map(rec => <CropGuideCard key={rec.id} crop={rec} />)
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="indian" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRecs.map(rec => <CropGuideCard key={rec.id} crop={rec} />)}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="international" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRecs.map(rec => <CropGuideCard key={rec.id} crop={rec} />)}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="suggestions">
+            <FieldSuggestions user={user} recommendations={recommendations} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
