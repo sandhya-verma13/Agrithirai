@@ -1,0 +1,175 @@
+import React, { useState } from 'react';
+import { Equipment, User } from "@/entities/all";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const categories = [
+  "Tractors", "Harvesting", "Irrigation", "Plowing", 
+  "Seeding", "Fertilizers", "Tools", "Other"
+];
+
+const conditions = [
+  "excellent", "good", "fair", "needs_repair"
+];
+
+export default function AddEquipmentForm({ onClose, onSuccess }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    category: '',
+    location: '',
+    rental_price_per_day: '',
+    condition: '',
+    contact_number: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const user = await User.me();
+      await Equipment.create({
+        ...formData,
+        rental_price_per_day: parseFloat(formData.rental_price_per_day),
+        owner_email: user.email,
+        availability_status: 'available'
+      });
+      onSuccess();
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>List Your Equipment</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name">Equipment Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder="e.g., John Deere Tractor"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              placeholder="Describe your equipment, its features, and any special requirements"
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => handleChange('location', e.target.value)}
+                placeholder="Village or city name"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="rental_price">Rental Price (₹/day)</Label>
+              <Input
+                id="rental_price"
+                type="number"
+                value={formData.rental_price_per_day}
+                onChange={(e) => handleChange('rental_price_per_day', e.target.value)}
+                placeholder="1000"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="condition">Condition</Label>
+              <Select value={formData.condition} onValueChange={(value) => handleChange('condition', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Equipment condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  {conditions.map(condition => (
+                    <SelectItem key={condition} value={condition}>
+                      {condition.replace('_', ' ').toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="contact">Contact Number</Label>
+              <Input
+                id="contact"
+                value={formData.contact_number}
+                onChange={(e) => handleChange('contact_number', e.target.value)}
+                placeholder="Your phone number"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {loading ? 'Listing...' : 'List Equipment'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
